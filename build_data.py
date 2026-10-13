@@ -180,13 +180,17 @@ def build_pi(local):
 
     # P0 je Planetentyp, gegen die SDE-Namen geprüft
     p0_ids = {t for t, lv in tier.items() if lv == 0}
+    # Namen tolerant vergleichen: "Micro Organisms" == "Microorganisms", Groß-/Kleinschreibung egal
+    norm = lambda s: "".join(ch for ch in s.lower() if ch.isalnum())
+    p0_by_norm = {norm(names.get(t, "")): t for t in p0_ids}
     resources = {}
     for ptype, res in PLANET_RESOURCES.items():
         ids = []
         for n in res:
-            t = by_name.get(n)
-            if t not in p0_ids:
-                sys.exit(f"P0-Rohstoff '{n}' ({ptype}) nicht in den Rezepten gefunden – Tabelle prüfen.")
+            t = p0_by_norm.get(norm(n))
+            if t is None:
+                sys.exit(f"P0-Rohstoff '{n}' ({ptype}) nicht in den Rezepten gefunden – Tabelle prüfen. "
+                         f"P0 laut SDE: {sorted(names.get(x, x) for x in p0_ids)}")
             ids.append(t)
         resources[ptype] = ids
     covered = {t for ids in resources.values() for t in ids}

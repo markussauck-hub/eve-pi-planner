@@ -19,7 +19,7 @@ from pathlib import Path
 P0_TO_P1 = {
     "Aqueous Liquids": "Water", "Autotrophs": "Industrial Fibers", "Base Metals": "Reactive Metals",
     "Carbon Compounds": "Biofuels", "Complex Organisms": "Proteins", "Felsic Magma": "Silicon",
-    "Heavy Metals": "Toxic Metals", "Ionic Solutions": "Electrolytes", "Micro Organisms": "Bacteria",
+    "Heavy Metals": "Toxic Metals", "Ionic Solutions": "Electrolytes", "Microorganisms": "Bacteria",
     "Noble Gas": "Oxygen", "Noble Metals": "Precious Metals", "Non-CS Crystals": "Chiral Structures",
     "Planktic Colonies": "Biomass", "Reactive Gas": "Oxidizing Compound", "Suspended Plasma": "Plasmoids",
 }
