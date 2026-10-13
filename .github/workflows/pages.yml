@@ -1,0 +1,62 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "29 5 * * 2"   # jeden Dienstag 05:29 UTC (nach dem üblichen Patch-Day)
+  workflow_dispatch:        # manuell über den Actions-Tab
+
+permissions:
+  contents: write   # für den Branch "deploy" (Lincolnsoft Server)
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Test mit der Mini-SDE (offline)
+        run: |
+          python tests/make_fixture.py /tmp/sde
+          python build_data.py --local /tmp/sde --out /tmp/t/pi.json --universe-out /tmp/t/universe.json
+
+      - name: SDE laden und pi.json + universe.json bauen
+        run: python build_data.py --out site/pi.json --universe-out site/universe.json
+
+      - name: Seite zusammenstellen
+        run: cp index.html site/ && cp -r fonts site/
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+      - name: Server-Branch "deploy" aktualisieren (für den Lincolnsoft Server)
+        run: |
+          cd site
+          git init -q -b deploy
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Deploy ${GITHUB_SHA::7}"
+          git push -f -q "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" deploy
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
