@@ -1530,8 +1530,8 @@ async function renderSystems() {
 // OAuth2 + PKCE im Browser, eigene EVE-App je Host. Tokens bleiben in localStorage dieser Domain.
 const SSO = (() => {
   // >>> Nach dem Anlegen der beiden Apps auf developers.eveonline.com hier die Client-IDs eintragen <<<
-  const CLIENT_ID_GITHUB = "";        // Callback: https://markussauck-hub.github.io/eve-pi-planner/
-  const CLIENT_ID_LINCOLNSOFT = "";   // Callback: https://lincolnsoft.de/pi-planner/
+  const CLIENT_ID_GITHUB = "54d54f7ce90542b6b631b84c303076bf";        // Callback: https://markussauck-hub.github.io/eve-pi-planner/
+  const CLIENT_ID_LINCOLNSOFT = "6eb3347f4dad4205a17fa4b9d5f4d6df";   // Callback: https://lincolnsoft.de/pi-planner/
   const CLIENT_ID = ON_LINCOLNSOFT ? CLIENT_ID_LINCOLNSOFT : CLIENT_ID_GITHUB;
   const CALLBACK = ON_LINCOLNSOFT ? location.origin + "/pi-planner/" : "https://markussauck-hub.github.io/eve-pi-planner/";
   const SCOPES = "esi-planets.manage_planets.v1 esi-skills.read_skills.v1";
