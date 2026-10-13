@@ -32,7 +32,16 @@ jobs:
           python build_data.py --local /tmp/sde --out /tmp/t/pi.json --universe-out /tmp/t/universe.json
 
       - name: SDE laden und pi.json + universe.json bauen
-        run: python build_data.py --out site/pi.json --universe-out site/universe.json
+        shell: bash
+        run: |
+          # Ausgabe zusätzlich als Annotation, damit Fehler auch ohne Log-Download sichtbar sind
+          if ! python build_data.py --out site/pi.json --universe-out site/universe.json > build.log 2>&1; then
+            cat build.log
+            echo "::error title=build_data.py::$(tail -n 15 build.log | sed ':a;N;$!ba;s/%/%25/g;s/\n/%0A/g')"
+            exit 1
+          fi
+          cat build.log
+          echo "::notice title=build_data.py::$(grep -E 'Rezepte|Systeme|Geschrieben|CPU' build.log | sed ':a;N;$!ba;s/%/%25/g;s/\n/%0A/g')"
 
       - name: Seite zusammenstellen
         run: cp index.html site/ && cp -r fonts site/
