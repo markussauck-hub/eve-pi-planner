@@ -41,7 +41,7 @@ jobs:
             exit 1
           fi
           cat build.log
-          echo "::notice title=build_data.py::$(grep -E 'Rezepte|Systeme|Geschrieben|CPU' build.log | sed ':a;N;$!ba;s/%/%25/g;s/\n/%0A/g')"
+          echo "::notice title=build_data.py::$(grep -E "Rezepte|Systeme|Jita|Geschrieben" build.log | sed ':a;N;$!ba;s/%/%25/g;s/\n/%0A/g')"
 
       - name: Seite zusammenstellen
         run: cp index.html site/ && cp -r fonts site/

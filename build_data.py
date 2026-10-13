@@ -61,7 +61,7 @@ BUILDINGS = {
 # Command Center je Upgrade-Stufe (0–5): CPU / PG. Nicht in der SDE.
 COMMAND_CENTER = [[1675, 6000], [7057, 9000], [12136, 12000], [17215, 15000], [21315, 17000], [25415, 19000]]
 
-# Steuer-Basiswert je Stufe (ISK pro Einheit), falls invTypes.basePrice fehlt oder unplausibel ist.
+# Customs-Basiswert je Stufe (ISK pro Einheit), fest im Spiel, nicht in der SDE.
 # Exportsteuer = Basiswert × Steuersatz, Import = 50 % davon.
 BASE_VALUE = {0: 5, 1: 400, 2: 7200, 3: 60000, 4: 1200000}
 
@@ -173,10 +173,11 @@ def build_pi(local):
         sys.exit(f"Unerwartete Stufen {dict(counts)} – Datenquelle prüfen.")
 
     # Planetentypen: Typname "Planet (Barren)" -> "Barren"
-    planet_type_ids = {}
+    # Mehrere TypeIDs können denselben Namen tragen ("Planet (Barren)") – alle merken
+    planet_type_ids = defaultdict(list)
     for tid, n in names.items():
         if group_of.get(tid) == PLANET_GROUP and n.startswith("Planet (") and n.endswith(")"):
-            planet_type_ids[n[8:-1]] = tid
+            planet_type_ids[n[8:-1]].append(tid)
 
     # P0 je Planetentyp, gegen die SDE-Namen geprüft
     p0_ids = {t for t, lv in tier.items() if lv == 0}
@@ -247,10 +248,8 @@ def build_pi(local):
     # Items: id -> [Name, Stufe, Steuer-Basiswert, Volumen]
     items = {}
     for t, lv in tier.items():
-        bp = base_price.get(t)
-        lo, hi = BASE_VALUE[lv] / 5, BASE_VALUE[lv] * 5
-        tax_base = bp if bp and lo <= bp <= hi else BASE_VALUE[lv]
-        items[str(t)] = [names.get(t, f"#{t}"), lv, tax_base, volume.get(t) or 0]
+        # invTypes.basePrice ist NICHT der Customs-Basiswert (schwankt je Item) – im Spiel gilt ein Wert je Stufe
+        items[str(t)] = [names.get(t, f"#{t}"), lv, BASE_VALUE[lv], volume.get(t) or 0]
 
     return {
         "source": "Fuzzwork SDE dump (fuzzwork.co.uk/dump/latest/csv/)",
@@ -260,7 +259,7 @@ def build_pi(local):
         # Schematic-ID -> Produkt (für die Fabriken eigener Kolonien aus ESI)
         "schematics": {str(r["sid"]): t for t, r in sorted(recipes.items())},
         "planetTypes": PLANET_TYPES,
-        "planetTypeIds": {p: planet_type_ids.get(p) for p in PLANET_TYPES},
+        "planetTypeIds": {p: sorted(planet_type_ids.get(p, [])) for p in PLANET_TYPES},
         "resources": resources,
         "p4Planets": p4_planets,
         "buildings": buildings,
@@ -272,7 +271,7 @@ def build_pi(local):
 # Universum: Systeme, Planetentypen, Gates
 # ---------------------------------------------------------------------------
 def build_universe(local, planet_type_ids):
-    type_idx = {tid: PLANET_TYPES.index(p) for p, tid in planet_type_ids.items() if p in PLANET_TYPES}
+    type_idx = {tid: PLANET_TYPES.index(p) for p, ids in planet_type_ids.items() if p in PLANET_TYPES for tid in ids}
 
     regions = {}
     for r in rows("mapRegions", local, need=("regionid", "regionname")):
@@ -311,7 +310,10 @@ def build_universe(local, planet_type_ids):
             edges.add((min(a, b), max(a, b)))
 
     print(f"  {len(order)} Systeme mit PI-Planeten, {n_planets} Planeten, {len(edges)} Gate-Verbindungen", flush=True)
-    if len(order) < 1000 or len(edges) < 1000:
+    jita = next((s for s in systems.values() if s["name"] == "Jita"), None)
+    if jita:
+        print(f"  Kontrolle Jita: {dict(zip(PLANET_TYPES, jita['pl']))}", flush=True)
+    if len(order) < 1000 or len(edges) < 1000 or n_planets < 30000 * (len(order) > 5000):
         sys.exit("Zu wenige Systeme oder Gates – Datenquelle prüfen.")
 
     def sec(v):          # exakter Wert, die Seite rundet wie im Spiel

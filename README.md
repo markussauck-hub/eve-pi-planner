@@ -24,9 +24,9 @@ Tools (`lincolnsoft.snd.*`). Direktlinks: `#ranking`, `#plan/<TypeID>`, `#system
   P3→P4 6+6+6 (bzw. 40 P1) → 1 je h. Fabriken pro Stufe = Bedarf ÷ Leistung einer Fabrik.
 - **P0-Ertrag ist eine Eingabe**, keine Rechnung: der Ertrag eines Extraktors hängt von der Ressourcen-Karte
   des einzelnen Planeten ab, die weder in der SDE noch öffentlich per ESI steht. Default 6.000 P0/h je Planet.
-- **Customs-Steuer**: Export = Basiswert × Steuersatz, Import = 50 % davon. Basiswerte je Stufe aus
-  `invTypes.basePrice`, sonst Rückfall P0 5 · P1 400 · P2 7.200 · P3 60.000 · P4 1.200.000 ISK.
-  *Die Rückfallwerte bitte einmal im Spiel gegenprüfen* (Export-Fenster eines Customs Office).
+- **Customs-Steuer**: Export = Basiswert × Steuersatz, Import = 50 % davon. Fester Basiswert je Stufe
+  (nicht in der SDE): P0 5 · P1 400 · P2 7.200 · P3 60.000 · P4 1.200.000 ISK.
+  *Bitte einmal im Spiel gegenprüfen* (Export-Fenster eines Customs Office), P2 ist bestätigt.
 - **P1-Transport**: Haken im Planer = eigenes P1 wird vom Extraktions- zum Fabrikplaneten verschifft
   (Export + Import versteuert). P2+ wird auf dem Fabrikplaneten weiterverarbeitet.
 - **Eigenes P0 kostet nichts** – Zeit, Klicks und Command-Center-Kosten sind nicht eingerechnet.
